@@ -1,8 +1,104 @@
-/*
+/* Container for our timer icon and its pop-up panel */
+.pomodoro-container {
+  position: relative;
+  margin-right: 6px;
+}
 
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
+/* The main icon button - completely flat and transparent */
+.pomodoro-pie-button {
+  background-color: transparent !important;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px; /* A little padding for easier clicking */
+  border-radius: var(--radius-s);
+  color: var(--icon-color);
+  opacity: var(--icon-opacity);
+  height: auto;
+  border: 0;
+  cursor: pointer;
+  box-shadow: none !important; /* Explicitly remove shadow */
+}
 
-If your plugin does not need CSS, delete this file.
+/* Minimal hover effect */
+.pomodoro-pie-button:hover {
+  opacity: 1;
+  background-color: var(--background-modifier-hover) !important;
+}
 
-*/
+/* The SVG element for the pie chart */
+.pomodoro-pie-chart {
+  width: 20px;
+  height: 20px;
+  transform: rotate(-90deg);
+}
+
+/* The background track is transparent as requested */
+.progress-ring__track {
+  stroke: transparent;
+}
+
+/* The animated foreground circle */
+.progress-ring__circle {
+  transition: stroke-dashoffset 0.3s linear, stroke 0.3s ease;
+  stroke-linecap: round;
+}
+
+/* The pop-up panel for controls */
+.pomodoro-control-panel {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  padding: 12px;
+  margin-top: 8px;
+  background-color: var(--background-secondary);
+  border-radius: var(--radius-m);
+  border: 1px solid var(--background-modifier-border);
+  box-shadow: var(--shadow-s);
+  white-space: nowrap;
+  flex-direction: column;
+  gap: 8px;
+  text-align: center;
+  
+  /* Hidden by default - controlled by JavaScript */
+  display: none;
+}
+
+/* This class makes the panel visible */
+.pomodoro-control-panel.is-panel-visible {
+    display: flex;
+}
+
+/* Mode indicator (e.g., "Focus") */
+.pomodoro-panel-mode {
+  font-size: var(--font-ui-small);
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-s);
+  transition: background-color 0.2s ease;
+}
+
+.pomodoro-panel-mode:hover {
+  background-color: var(--background-modifier-hover);
+}
+
+/* The timer display button */
+.pomodoro-panel-time {
+  font-family: var(--font-monospace, monospace);
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--text-normal);
+  cursor: pointer;
+  padding: 8px 12px;
+  border-radius: var(--radius-s);
+  transition: background-color 0.2s ease;
+  border: none;
+  background-color: transparent;
+}
+
+.pomodoro-panel-time:hover {
+  background-color: var(--background-modifier-hover);
+}
