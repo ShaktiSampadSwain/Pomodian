@@ -14,16 +14,19 @@ export class PomoTimer {
     private intervalId: number | null = null;
     private onTick: (remainingTime: number, totalTime: number) => void;
     private onStateChange: (state: TimerState) => void;
+    private onTimerComplete: () => void;
     private settings: PomodoroSettings;
 
     constructor(
         settings: PomodoroSettings, 
         onTick: (remainingTime: number, totalTime: number) => void, 
-        onStateChange: (state: TimerState) => void
+        onStateChange: (state: TimerState) => void,
+        onTimerComplete: () => void
     ) {
         this.settings = settings;
         this.onTick = onTick;
         this.onStateChange = onStateChange;
+        this.onTimerComplete = onTimerComplete;
     }
 
     public updateSettings(settings: PomodoroSettings) {
@@ -62,6 +65,7 @@ export class PomoTimer {
             if (this.remainingTime <= 0) {
                 const completedState = this.state;
                 this.stop();
+                this.onTimerComplete();
                 this.onStateChange(completedState);
             }
         }, 1000);
@@ -94,6 +98,12 @@ export class PomoTimer {
         this.remainingTime = 0;
         this.totalTime = 0;
         this.onTick(this.remainingTime, this.totalTime);
+    }
+
+    reset() {
+        this.stop();
+        // Reset to show full time for current mode
+        this.onTick(0, 0);
     }
 
     getState(): TimerState {
@@ -134,7 +144,7 @@ export const DEFAULT_SETTINGS: PomodoroSettings = {
     autoStartBreaks: false,
     autoStartPomodoros: false,
     showDesktopNotification: true,
-    playSound: false,
+    playSound: true,
     showInStatusBar: false,
     enableKeyboardShortcuts: true
 };

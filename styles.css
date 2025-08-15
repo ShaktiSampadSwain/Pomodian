@@ -4,6 +4,21 @@
   margin-right: 6px;
 }
 
+/* Session complete animation - minimal circle pulse only */
+.pomodoro-container.session-complete .pomodoro-pie-chart {
+  animation: minimalCirclePulse 1s ease-in-out infinite;
+}
+
+@keyframes minimalCirclePulse {
+  0%, 100% { 
+    transform: rotate(-90deg) scale(1);
+  }
+  50% { 
+    transform: rotate(-90deg) scale(1.08);
+  }
+}
+
+
 /* The main icon button - completely flat and transparent */
 .pomodoro-pie-button {
   background-color: transparent !important;
@@ -18,6 +33,7 @@
   border: 0;
   cursor: pointer;
   box-shadow: none !important; /* Explicitly remove shadow */
+  transition: transform 0.2s ease, opacity 0.2s ease;
 }
 
 /* Minimal hover effect */
@@ -26,11 +42,26 @@
   background-color: var(--background-modifier-hover) !important;
 }
 
+/* Enhanced hover effect when session is complete - removed */
+.pomodoro-container.session-complete .pomodoro-pie-button:hover {
+  transform: none;
+}
+
 /* The SVG element for the pie chart */
 .pomodoro-pie-chart {
   width: 20px;
   height: 20px;
   transform: rotate(-90deg);
+  transition: transform 0.3s ease;
+}
+
+/* Animate the pie chart when session is complete - removed extra animation */
+.pomodoro-container.session-complete .pomodoro-pie-chart {
+  animation: minimalCirclePulse 1s ease-in-out infinite;
+}
+
+@keyframes pieChartPulse {
+  /* Removed - using minimalCirclePulse instead */
 }
 
 /* The background track is transparent as requested */
@@ -42,6 +73,11 @@
 .progress-ring__circle {
   transition: stroke-dashoffset 0.3s linear, stroke 0.3s ease;
   stroke-linecap: round;
+}
+
+/* Enhanced circle animation for session complete - removed glow effect */
+.pomodoro-container.session-complete .progress-ring__circle {
+  /* Removed glow effects */
 }
 
 /* The pop-up panel for controls */
@@ -61,6 +97,7 @@
   flex-direction: column;
   gap: 8px;
   text-align: center;
+  min-width: 120px;
   
   /* Hidden by default - controlled by JavaScript */
   display: none;
@@ -71,6 +108,11 @@
     display: flex;
 }
 
+/* Enhanced panel appearance when session is complete - removed glow */
+.pomodoro-container.session-complete .pomodoro-control-panel {
+  /* Removed glow border effects */
+}
+
 /* Mode indicator (e.g., "Focus") */
 .pomodoro-panel-mode {
   font-size: var(--font-ui-small);
@@ -78,11 +120,16 @@
   cursor: pointer;
   padding: 4px 8px;
   border-radius: var(--radius-s);
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, opacity 0.2s ease, cursor 0.2s ease;
 }
 
 .pomodoro-panel-mode:hover {
   background-color: var(--background-modifier-hover);
+}
+
+/* Disabled state for mode switching */
+.pomodoro-panel-mode[style*="opacity: 0.5"] {
+  pointer-events: none;
 }
 
 /* The timer display button */
@@ -94,11 +141,136 @@
   cursor: pointer;
   padding: 8px 12px;
   border-radius: var(--radius-s);
-  transition: background-color 0.2s ease;
+  transition: background-color 0.2s ease, transform 0.1s ease;
   border: none;
   background-color: transparent;
+  min-width: 80px;
 }
 
 .pomodoro-panel-time:hover {
   background-color: var(--background-modifier-hover);
+}
+
+.pomodoro-panel-time:active {
+  transform: scale(0.98);
+}
+
+/* Enhanced time display when session is complete - removed glow */
+.pomodoro-container.session-complete .pomodoro-panel-time {
+  /* Removed glow effects */
+}
+
+@keyframes timeDisplayGlow {
+  /* Removed glow animation */
+}
+
+/* Notification styles */
+.pomodoro-notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--background-primary);
+  border: 1px solid var(--interactive-accent);
+  border-radius: var(--radius-m);
+  padding: 16px;
+  box-shadow: var(--shadow-l);
+  z-index: 10000;
+  max-width: 300px;
+  animation: slideInNotification 0.3s ease-out;
+}
+
+@keyframes slideInNotification {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.pomodoro-notification-title {
+  font-weight: 600;
+  color: var(--interactive-accent);
+  margin-bottom: 4px;
+}
+
+.pomodoro-notification-body {
+  font-size: var(--font-ui-small);
+  color: var(--text-muted);
+}
+
+/* Progress indicator for completed sessions */
+.pomodoro-progress-indicator {
+  display: flex;
+  justify-content: center;
+  gap: 3px;
+  margin-top: 6px;
+}
+
+.pomodoro-progress-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background-color: var(--text-faint);
+  transition: background-color 0.3s ease;
+}
+
+.pomodoro-progress-dot.completed {
+  background-color: var(--interactive-accent);
+}
+
+.pomodoro-progress-dot.current {
+  background-color: var(--interactive-accent);
+  animation: currentDotPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes currentDotPulse {
+  0%, 100% { 
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% { 
+    transform: scale(1.3);
+    opacity: 0.7;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .pomodoro-control-panel {
+    left: auto;
+    right: 0;
+    transform: none;
+  }
+  
+  .pomodoro-notification {
+    right: 10px;
+    left: 10px;
+    max-width: none;
+  }
+}
+
+/* Focus ring for accessibility */
+.pomodoro-pie-button:focus-visible,
+.pomodoro-panel-mode:focus-visible,
+.pomodoro-panel-time:focus-visible {
+  outline: 2px solid var(--interactive-accent);
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .progress-ring__circle {
+    stroke-width: 4;
+  }
+  
+  .pomodoro-container.session-complete .progress-ring__circle {
+    stroke-width: 5;
+  }
+  
+  .pomodoro-control-panel {
+    border-width: 2px;
+  }
 }
