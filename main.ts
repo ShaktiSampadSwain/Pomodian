@@ -296,8 +296,10 @@ export default class PomodoroPlugin extends Plugin {
         }, 10000);
     }
 
+    
+
     private playNotificationSound() {
-        // Create a simple beep sound using Web Audio API
+        // Create a more noticeable two-tone sound using Web Audio API
         try {
             const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
             const oscillator = audioContext.createOscillator();
@@ -306,14 +308,15 @@ export default class PomodoroPlugin extends Plugin {
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
             
-            oscillator.frequency.value = 800; // 800 Hz tone
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime); // 800 Hz tone
+            oscillator.frequency.setValueAtTime(1200, audioContext.currentTime + 0.2); // 1200 Hz tone
             oscillator.type = 'sine';
             
-            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+            gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
             
             oscillator.start(audioContext.currentTime);
-            oscillator.stop(audioContext.currentTime + 0.5);
+            oscillator.stop(audioContext.currentTime + 1);
         } catch (error) {
             console.warn('Could not play notification sound:', error);
         }
@@ -324,7 +327,7 @@ export default class PomodoroPlugin extends Plugin {
             const sessionType = this.getModeText();
             const nextSessionType = this.getNextModeText();
             
-            const notification = new Notification(`Pomodoro Timer - ${sessionType} Complete`, {
+            const notification = new Notification(`Pomodian - ${sessionType} Complete`, {
                 body: `Your ${sessionType.toLowerCase()} session is finished. Next: ${nextSessionType}`,
                 icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiIHN0cm9rZT0iIzY2NiIgc3Ryb2tlLXdpZHRoPSIyIiBmaWxsPSJ0cmFuc3BhcmVudCIvPgo8L3N2Zz4K',
                 requireInteraction: false,
@@ -338,6 +341,8 @@ export default class PomodoroPlugin extends Plugin {
             }, 5000);
         }
     }
+
+
 
     private advanceToNextMode() {
         // Calculate next mode based on completed pomodoros
