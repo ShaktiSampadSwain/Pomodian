@@ -16,7 +16,7 @@ If you find this plugin helpful, please consider supporting its development.
 
 ![DarkAndLightmode](Images/page-1.png)
 ![timer](Images/page-2.png)
-
+![settings](Images/page-3.png)
 
 
 ---
