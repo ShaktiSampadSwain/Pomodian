@@ -417,7 +417,7 @@ class PomodoroSettingTab extends PluginSettingTab {
             .setName('Work time (minutes)')
             .setDesc('Duration of focus sessions')
             .addSlider(slider => slider
-                .setLimits(1, 60, 1)
+                .setLimits(1, 60, 2)
                 .setValue(this.plugin.settings.workTime)
                 .setDynamicTooltip()
                 .onChange(async (value) => { 
