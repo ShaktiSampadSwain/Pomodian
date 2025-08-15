@@ -1,6 +1,6 @@
 {
-    "id": "pomodoro-timer",
-    "name": "Pomodoro Timer",
+    "id": "Pomodian",
+    "name": "Pomodian",
     "version": "1.0.0",
     "minAppVersion": "0.15.0",
     "description": "A Pomodoro timer plugin for Obsidian to help you focus.",
