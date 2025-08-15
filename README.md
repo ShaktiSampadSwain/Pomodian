@@ -16,6 +16,7 @@ If you find this plugin helpful, please consider supporting its development.
 
 ![DarkAndLightmode](Images/page-1.png)
 ![timer](Images/page-2.png)
+![settings](Images/page-3.png)
 
 * **Caption:** The Pomodian timer icon in the Obsidian header, showing the progress of a focus session.
 * **Caption:** The control panel allows you to play/pause, reset, and switch modes.
