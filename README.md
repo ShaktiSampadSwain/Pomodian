@@ -1,94 +1,87 @@
-# Obsidian Sample Plugin
+# Pomodian: A Pomodoro Timer for Obsidian
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+A simple, unobtrusive Pomodoro timer for Obsidian to help you stay focused and productive. **Pomodian** integrates directly into your workspace, providing a visual timer in the header and customizable settings to fit your workflow.
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+---
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+### Support Me
 
-## First time developing plugins?
+If you find this plugin helpful, please consider supporting its development.
 
-Quick starting guide for new plugin devs:
+<a href="https://buymeacoffee.com/shakti_02" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me A Coffee" style="height: 60px !important;width: 217px !important;" ></a>
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+---
 
-## Releasing new releases
+### Screenshots
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+(Here you can add screenshots of the plugin in action. For example, the timer icon, the control panel, and the settings tab.)
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+* **Caption:** The Pomodian timer icon in the Obsidian header, showing the progress of a focus session.
+* **Caption:** The control panel allows you to play/pause, reset, and switch modes.
 
-## Adding your plugin to the community plugin list
+---
 
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+### Demo Video
 
-## How to use
+(Embed a short YouTube video here demonstrating the plugin's features and usage.)
 
-- Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
-- `npm i` or `yarn` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
+---
 
-## Manually installing the plugin
+### Features
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+* **Minimalist Design:** A clean, circular progress indicator in the header that doesn't clutter your workspace.
+* **Easy Controls:** A hover-activated control panel to start, pause, resume, and reset your timer.
+* **Customizable Sessions:** Set your own durations for work, short breaks, and long breaks.
+* **Flexible Workflow:**
+    * Manually switch between Work, Short Break, and Long Break modes when the timer is idle.
+    * Configure the number of work sessions before a long break.
+* **Automations:**
+    * Optionally auto-start break sessions after a work session completes.
+    * Optionally auto-start work sessions after a break completes.
+* **Notifications:**
+    * Receive desktop notifications when a session ends.
+    * Get an audible sound alert at the end of each session.
+* **Persistent Pinning:** Pin the control panel to keep it visible.
 
-## Improve code quality with eslint (optional)
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- To use eslint with this project, make sure to install eslint from terminal:
-  - `npm install -g eslint`
-- To use eslint to analyze this project use this command:
-  - `eslint main.ts`
-  - eslint will then create a report with suggestions for code improvement by file and line number.
-- If your source code is in a folder, such as `src`, you can use eslint with this command to analyze all files in that folder:
-  - `eslint .\src\`
+---
 
-## Funding URL
+### How to Use
 
-You can include funding URLs where people who use your plugin can financially support it.
+* **Access the Timer:** The Pomodoro timer icon will appear in the header of your active pane.
+* **View Controls:** Hover over the timer icon to reveal the control panel.
+* **Start/Pause/Resume:** Left-click the time display to start, pause, or resume the timer.
+* **Reset:** Right-click the time display to reset the current session.
+* **Switch Modes:** When the timer is reset (idle), click the mode name (e.g., "Focus") to cycle through Work, Short Break, and Long Break.
+* **Pin the Panel:** Click the timer icon itself to pin the control panel open. Click it again to unpin.
 
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
+---
 
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
-}
-```
+### Installation
 
-If you have multiple URLs, you can also do:
+1.  Open Obsidian's **Settings**.
+2.  Go to the **Community plugins** tab.
+3.  Make sure "**Restricted mode**" is off.
+4.  Click **Browse** to open the community plugins browser.
+5.  Search for "**Pomodian**" and click **Install**.
+6.  Once installed, click **Enable** to activate the plugin.
 
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
-```
+---
 
-## API Documentation
+### Configuration
 
-See https://github.com/obsidianmd/obsidian-api
+You can customize the timer to your liking in the plugin settings:
+
+* **Work time (minutes):** Set the duration for your focus sessions.
+* **Short break time (minutes):** Set the duration for short breaks.
+* **Long break time (minutes):** Set the duration for long breaks.
+* **Sessions until long break:** Define how many work sessions to complete before a long break is triggered.
+* **Auto-start breaks:** Toggle whether breaks should start automatically after a work session.
+* **Auto-start focus sessions:** Toggle whether work sessions should start automatically after a break.
+* **Play sound:** Enable or disable the sound notification at the end of a session.
+* **Desktop notifications:** Enable or disable desktop notifications.
+
+---
+
+### License
+
+This plugin is released under the Obsidian License. See the `LICENSE` file for more details.
