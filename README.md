@@ -15,7 +15,7 @@ If you find this plugin helpful, please consider supporting its development.
 ### Screenshots
 
 ![DarkAndLightmode](Images/page-1.png)
-![timer](Images/page-2.png)
+![timer](Images/page-5.png)
 ![settings](Images/page-4.png)
 
 
