@@ -1,10 +1,10 @@
 {
-    "id": "Pomodian",
+    "id": "pomodian",
     "name": "Pomodian",
-    "version": "1.0.5",
+    "version": "1.0.6",
     "minAppVersion": "0.15.0",
     "description": "A Pomodoro timer plugin for Obsidian to help you focus.",
-    "author": "Shakti sampad swain",
+    "author": "Shakti Sampad Swain",
     "authorUrl": "",
     "fundingUrl": "https://buymeacoffee.com/shakti_02",
     "isDesktopOnly": false
