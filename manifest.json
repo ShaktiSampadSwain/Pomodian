@@ -1,7 +1,7 @@
 {
     "id": "Pomodian",
     "name": "Pomodian",
-    "version": "1.0.0",
+    "version": "1.0.4",
     "minAppVersion": "0.15.0",
     "description": "A Pomodoro timer plugin for Obsidian to help you focus.",
     "author": "Shakti sampad swain",
