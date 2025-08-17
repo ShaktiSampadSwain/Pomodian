@@ -18,7 +18,6 @@
   }
 }
 
-
 /* The main icon button - completely flat and transparent */
 .pomodoro-pie-button {
   background-color: transparent !important;
@@ -60,10 +59,6 @@
   animation: minimalCirclePulse 1s ease-in-out infinite;
 }
 
-@keyframes pieChartPulse {
-  /* Removed - using minimalCirclePulse instead */
-}
-
 /* The background track is transparent as requested */
 .progress-ring__track {
   stroke: transparent;
@@ -73,11 +68,30 @@
 .progress-ring__circle {
   transition: stroke-dashoffset 0.3s linear, stroke 0.3s ease;
   stroke-linecap: round;
+  /* Use CSS custom properties for dynamic styling */
+  stroke-dasharray: var(--circumference, 50.27) var(--circumference, 50.27);
+  /* Progress now represents remaining time (1 = full, 0 = empty) */
+  stroke-dashoffset: calc(var(--circumference, 50.27) * (1 - var(--progress, 1)));
 }
 
-/* Enhanced circle animation for session complete - removed glow effect */
-.pomodoro-container.session-complete .progress-ring__circle {
-  /* Removed glow effects */
+/* Work mode styling */
+.progress-ring__circle.work-mode {
+  stroke: var(--interactive-accent);
+}
+
+/* Break mode styling */
+.progress-ring__circle.break-mode {
+  stroke: #808080;
+}
+
+/* Idle state styling */
+.progress-ring__circle.progress-idle {
+  stroke-dashoffset: 0; /* Full circle when idle */
+}
+
+/* Complete state styling */
+.progress-ring__circle.progress-complete {
+  stroke-dashoffset: var(--circumference, 50.27); /* Empty circle when complete */
 }
 
 /* The pop-up panel for controls */
@@ -101,16 +115,13 @@
   
   /* Hidden by default - controlled by JavaScript */
   display: none;
+  /* Allow interaction with panel elements */
+  pointer-events: auto;
 }
 
 /* This class makes the panel visible */
 .pomodoro-control-panel.is-panel-visible {
     display: flex;
-}
-
-/* Enhanced panel appearance when session is complete - removed glow */
-.pomodoro-container.session-complete .pomodoro-control-panel {
-  /* Removed glow border effects */
 }
 
 /* Mode indicator (e.g., "Focus") */
@@ -127,8 +138,26 @@
   background-color: var(--background-modifier-hover);
 }
 
+/* Work mode color */
+.pomodoro-panel-mode.work-mode {
+  color: var(--interactive-accent);
+}
+
+/* Break mode color */
+.pomodoro-panel-mode.break-mode {
+  color: #808080;
+}
+
+/* Enabled state for mode switching */
+.pomodoro-panel-mode.mode-enabled {
+  opacity: 1;
+  cursor: pointer;
+}
+
 /* Disabled state for mode switching */
-.pomodoro-panel-mode[style*="opacity: 0.5"] {
+.pomodoro-panel-mode.mode-disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
   pointer-events: none;
 }
 
@@ -153,15 +182,6 @@
 
 .pomodoro-panel-time:active {
   transform: scale(0.98);
-}
-
-/* Enhanced time display when session is complete - removed glow */
-.pomodoro-container.session-complete .pomodoro-panel-time {
-  /* Removed glow effects */
-}
-
-@keyframes timeDisplayGlow {
-  /* Removed glow animation */
 }
 
 /* Notification styles */

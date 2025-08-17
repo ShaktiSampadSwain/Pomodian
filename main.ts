@@ -16,6 +16,7 @@ export default class PomodoroPlugin extends Plugin {
     private panelTimeEl: HTMLButtonElement | null = null;
     private panelModeEl: HTMLDivElement | null = null;
     private isPanelPinned = false;
+    private hideTimeout: number | null = null;
 
     async onload() {
         await this.loadSettings();
@@ -37,6 +38,12 @@ export default class PomodoroPlugin extends Plugin {
     }
 
     onunload() {
+        // Clear any pending timeouts
+        if (this.hideTimeout !== null) {
+            clearTimeout(this.hideTimeout);
+            this.hideTimeout = null;
+        }
+        
         this.removeHeaderButton();
         this.timer.stop();
     }
@@ -67,7 +74,7 @@ export default class PomodoroPlugin extends Plugin {
     private createHeaderButton(parent: Element) {
         this.containerEl = parent.createEl('div', { cls: 'pomodoro-container' });
 
-        // Event Listeners for Hover and Click
+        // Event Listeners for Hover and Click - improved interaction
         this.containerEl.addEventListener('mouseenter', this.showPanel);
         this.containerEl.addEventListener('mouseleave', this.hidePanel);
         document.addEventListener('click', this.handleDocumentClick, true);
@@ -133,19 +140,49 @@ export default class PomodoroPlugin extends Plugin {
 
     private removeHeaderButton() {
         document.removeEventListener('click', this.handleDocumentClick, true);
+        
+        // Clear any pending hide timeout
+        if (this.hideTimeout !== null) {
+            clearTimeout(this.hideTimeout);
+            this.hideTimeout = null;
+        }
+        
         this.containerEl?.remove();
         this.containerEl = this.controlPanelEl = this.pieCircleEl = this.panelTimeEl = this.panelModeEl = null;
         this.isPanelPinned = false;
     }
 
-    private showPanel = () => this.controlPanelEl?.addClass('is-panel-visible');
-    private hidePanel = () => { 
-        if (!this.isPanelPinned) this.controlPanelEl?.removeClass('is-panel-visible'); 
+    private showPanel = () => {
+        // Clear any pending hide timeout when showing panel
+        if (this.hideTimeout !== null) {
+            clearTimeout(this.hideTimeout);
+            this.hideTimeout = null;
+        }
+        this.controlPanelEl?.addClass('is-panel-visible');
     };
+    
+    private hidePanel = () => { 
+        if (!this.isPanelPinned) {
+            // Add a 1-second grace period before hiding
+            this.hideTimeout = window.setTimeout(() => {
+                this.controlPanelEl?.removeClass('is-panel-visible');
+                this.hideTimeout = null;
+            }, 300);
+        }
+    };
+    
     private handleDocumentClick = (event: MouseEvent) => {
-        if (this.isPanelPinned && this.containerEl && !this.containerEl.contains(event.target as Node)) {
-            this.isPanelPinned = false;
-            this.hidePanel();
+        if (this.containerEl && !this.containerEl.contains(event.target as Node)) {
+            // Clicked outside the container
+            if (this.isPanelPinned) {
+                this.isPanelPinned = false;
+                // Clear any grace period and hide immediately when clicking outside
+                if (this.hideTimeout !== null) {
+                    clearTimeout(this.hideTimeout);
+                    this.hideTimeout = null;
+                }
+                this.controlPanelEl?.removeClass('is-panel-visible');
+            }
         }
     };
 
@@ -154,24 +191,36 @@ export default class PomodoroPlugin extends Plugin {
 
         const timerState = this.timer.getState();
         
-        // Color logic
+        // Remove all mode classes first
+        this.pieCircleEl.removeClass('work-mode', 'break-mode');
+        this.panelModeEl.removeClass('work-mode', 'break-mode', 'mode-enabled', 'mode-disabled');
+        this.pieCircleEl.removeClass('progress-complete', 'progress-idle');
+
+        // Add appropriate mode class
         const isWorkMode = this.currentMode === TimerState.Work;
-        const color = isWorkMode ? 'var(--interactive-accent)' : '#808080';
+        const modeClass = isWorkMode ? 'work-mode' : 'break-mode';
+        this.pieCircleEl.addClass(modeClass);
+        this.panelModeEl.addClass(modeClass);
 
-        // Update pie chart color and progress
-        this.pieCircleEl.style.stroke = color;
-
+        // Update pie chart progress using CSS custom properties
         const radius = this.pieCircleEl.r.baseVal.value;
         const circumference = 2 * Math.PI * radius;
-        this.pieCircleEl.style.strokeDasharray = `${circumference} ${circumference}`;
-
-        let offset: number;
+        
+        let progress: number;
         if (timerState === TimerState.Idle) {
-            offset = 0;
+            progress = 1; // Start with full circle
+            this.pieCircleEl.addClass('progress-idle');
         } else {
-            offset = totalTime > 0 ? circumference * (1 - remainingTime / totalTime) : circumference;
+            // Progress decreases from 1 to 0 (circle empties as time passes)
+            progress = totalTime > 0 ? remainingTime / totalTime : 0;
+            if (progress <= 0) {
+                this.pieCircleEl.addClass('progress-complete');
+            }
         }
-        this.pieCircleEl.style.strokeDashoffset = offset.toString();
+
+        // Set CSS custom properties for progress calculation
+        this.pieCircleEl.style.setProperty('--progress', progress.toString());
+        this.pieCircleEl.style.setProperty('--circumference', circumference.toString());
 
         // Add session complete animation
         if (this.isSessionComplete) {
@@ -192,15 +241,12 @@ export default class PomodoroPlugin extends Plugin {
 
         // Update mode display
         this.panelModeEl.setText(this.getModeText());
-        this.panelModeEl.style.color = color;
 
-        // Update mode display opacity based on whether it can be changed
+        // Update mode display state based on whether it can be changed
         if (timerState === TimerState.Idle && !this.timer.isRunning()) {
-            this.panelModeEl.style.opacity = '1';
-            this.panelModeEl.style.cursor = 'pointer';
+            this.panelModeEl.addClass('mode-enabled');
         } else {
-            this.panelModeEl.style.opacity = '0.5';
-            this.panelModeEl.style.cursor = 'not-allowed';
+            this.panelModeEl.addClass('mode-disabled');
         }
     }
     
@@ -296,12 +342,23 @@ export default class PomodoroPlugin extends Plugin {
         }, 10000);
     }
 
-    
-
     private playNotificationSound() {
         // Create a more noticeable two-tone sound using Web Audio API
         try {
-            const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+            // Use interface merging approach instead of casting to any
+            interface WindowWithWebkitAudioContext extends Window {
+                webkitAudioContext?: typeof AudioContext;
+            }
+            
+            const windowWithWebkit = window as WindowWithWebkitAudioContext;
+            const AudioContextConstructor = window.AudioContext || windowWithWebkit.webkitAudioContext;
+            
+            if (!AudioContextConstructor) {
+                console.warn('AudioContext not supported');
+                return;
+            }
+            
+            const audioContext = new AudioContextConstructor();
             const oscillator = audioContext.createOscillator();
             const gainNode = audioContext.createGain();
             
@@ -341,8 +398,6 @@ export default class PomodoroPlugin extends Plugin {
             }, 5000);
         }
     }
-
-
 
     private advanceToNextMode() {
         // Calculate next mode based on completed pomodoros
