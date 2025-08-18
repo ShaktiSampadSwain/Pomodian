@@ -5,7 +5,6 @@
     "minAppVersion": "0.15.0",
     "description": "A Minimal Pomodoro timer plugin to help you focus.",
     "author": "Shakti Sampad Swain",
-    "authorUrl": "",
     "fundingUrl": "https://buymeacoffee.com/shakti_02",
     "isDesktopOnly": false
 }
