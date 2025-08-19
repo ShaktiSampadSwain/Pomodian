@@ -4,6 +4,7 @@ import { PomoView, POMO_VIEW_TYPE } from './PomoView';
 
 export default class PomodoroPlugin extends Plugin {
     settings: PomodoroSettings;
+    public app: App;
     public timer: PomoTimer;
     public currentMode: TimerState = TimerState.Work;
     private completedPomodoros: number = 0;
@@ -382,6 +383,14 @@ export default class PomodoroPlugin extends Plugin {
         }
     }
 
+    public addTask(text: string) {
+        this.settings.tasks.push({ text, completed: false });
+        this.saveSettings();
+        if (this.pomoView) {
+            this.pomoView.updateTasks();
+        }
+    }
+
     public handleCycleModeClick = () => {
         // Only allow mode change when timer is idle and reset
         if (this.timer.getState() !== TimerState.Idle || this.timer.isRunning()) {
@@ -461,6 +470,10 @@ export default class PomodoroPlugin extends Plugin {
         
         // Update UI to show completion state
         this.updateUI(0, 0);
+
+        if (this.pomoView) {
+            this.pomoView.updateStats();
+        }
 
         // Auto-dismiss session complete state after 10 seconds
         setTimeout(() => {

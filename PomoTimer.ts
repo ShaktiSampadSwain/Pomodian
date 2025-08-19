@@ -129,6 +129,11 @@ export interface Session {
     duration: number; // in seconds
 }
 
+export interface Task {
+    text: string;
+    completed: boolean;
+}
+
 export interface PomodoroSettings {
     workTime: number;
     shortBreakTime: number;
@@ -140,6 +145,7 @@ export interface PomodoroSettings {
     playSound: boolean;
     showInStatusBar: boolean;
     sessions: Session[];
+    tasks: Task[];
 }
 
 export const DEFAULT_SETTINGS: PomodoroSettings = {
@@ -153,4 +159,5 @@ export const DEFAULT_SETTINGS: PomodoroSettings = {
     playSound: true,
     showInStatusBar: false,
     sessions: [],
+    tasks: [],
 };

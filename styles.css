@@ -294,3 +294,62 @@
     border-width: 2px;
   }
 }
+
+.pomodoro-timer-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.pomodoro-timer-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.pomodoro-stats-cards {
+    display: flex;
+    gap: 10px;
+}
+
+.pomodoro-stats-card {
+    border: 1px solid var(--background-modifier-border);
+    border-radius: var(--radius-m);
+    padding: 10px;
+    flex-grow: 1;
+    text-align: center;
+}
+
+.pomodoro-stats-toggle {
+    display: flex;
+    justify-content: flex-end;
+}
+
+.pomodoro-tasks details > summary {
+    list-style: none;
+}
+
+.pomodoro-tasks-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pomodoro-tasks-progress {
+    flex-grow: 1;
+    height: 10px;
+    background-color: var(--background-modifier-border);
+    border-radius: 5px;
+}
+
+.pomodoro-progress-bar {
+    height: 100%;
+    background-color: var(--interactive-accent);
+    border-radius: 5px;
+}
+
+.pomodoro-task-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
