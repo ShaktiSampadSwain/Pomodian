@@ -28,10 +28,36 @@ export default class PomodoroPlugin extends Plugin {
         );
 
         this.addSettingTab(new PomodoroSettingTab(this.app, this));
+        
+        // Register commands for keyboard shortcuts
+        this.addCommand({
+            id: 'start-pause-timer',
+            name: 'Start/Pause timer',
+            callback: () => {
+                this.handlePauseResumeClick();
+            }
+        });
+
+        this.addCommand({
+            id: 'reset-timer',
+            name: 'Reset timer',
+            callback: () => {
+                this.handleResetClick();
+            }
+        });
+
+        this.addCommand({
+            id: 'switch-mode',
+            name: 'Switch timer mode',
+            callback: () => {
+                this.handleCycleModeClick();
+            }
+        });
+
         this.registerEvent(this.app.workspace.on('active-leaf-change', () => this.refreshHeaderButton()));
         this.app.workspace.onLayoutReady(() => this.refreshHeaderButton());
 
-        // Request notification permission
+        // Request notification permission on startup
         if ('Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission();
         }
@@ -80,6 +106,7 @@ export default class PomodoroPlugin extends Plugin {
         document.addEventListener('click', this.handleDocumentClick, true);
 
         const pieButton = this.containerEl.createEl('button', { cls: 'pomodoro-pie-button' });
+        pieButton.setAttribute('aria-label', 'Pomodoro timer');
         pieButton.onclick = (event) => {
             event.stopPropagation();
             if (this.isSessionComplete) {
@@ -123,7 +150,11 @@ export default class PomodoroPlugin extends Plugin {
         this.controlPanelEl = this.containerEl.createEl('div', { cls: 'pomodoro-control-panel' });
         this.panelModeEl = this.controlPanelEl.createEl('div', { 
             cls: 'pomodoro-panel-mode', 
-            attr: { 'title': 'Click to switch mode (only when timer is reset)' } 
+            attr: { 
+                'title': 'Click to switch mode (only when timer is reset)',
+                'role': 'button',
+                'tabindex': '0'
+            } 
         });
         this.panelModeEl.onclick = () => this.handleCycleModeClick();
         
@@ -163,7 +194,7 @@ export default class PomodoroPlugin extends Plugin {
     
     private hidePanel = () => { 
         if (!this.isPanelPinned) {
-            // Add a 1-second grace period before hiding
+            // Add a 300ms grace period before hiding
             this.hideTimeout = window.setTimeout(() => {
                 this.controlPanelEl?.removeClass('is-panel-visible');
                 this.hideTimeout = null;
@@ -263,8 +294,8 @@ export default class PomodoroPlugin extends Plugin {
         return this.currentMode === TimerState.Work 
             ? 'Focus' 
             : this.currentMode === TimerState.ShortBreak 
-                ? 'Short Break' 
-                : 'Long Break';
+                ? 'Short break' 
+                : 'Long break';
     };
 
     private handlePauseResumeClick = () => {
@@ -326,9 +357,9 @@ export default class PomodoroPlugin extends Plugin {
             this.showDesktopNotification();
         }
 
-        // Show simple notice without click requirement
+        // Show notice
         const sessionType = this.getModeText();
-        new Notice(`${sessionType} session completed!`, 4000); // 4 second notice
+        new Notice(`${sessionType} session completed!`, 4000);
 
         // Auto-advance to next mode and start if enabled
         this.advanceToNextMode();
@@ -343,7 +374,6 @@ export default class PomodoroPlugin extends Plugin {
     }
 
     private playNotificationSound() {
-        // Create a more noticeable two-tone sound using Web Audio API
         try {
             // Use interface merging approach instead of casting to any
             interface WindowWithWebkitAudioContext extends Window {
@@ -365,8 +395,8 @@ export default class PomodoroPlugin extends Plugin {
             oscillator.connect(gainNode);
             gainNode.connect(audioContext.destination);
             
-            oscillator.frequency.setValueAtTime(800, audioContext.currentTime); // 800 Hz tone
-            oscillator.frequency.setValueAtTime(1200, audioContext.currentTime + 0.2); // 1200 Hz tone
+            oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+            oscillator.frequency.setValueAtTime(1200, audioContext.currentTime + 0.2);
             oscillator.type = 'sine';
             
             gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
@@ -384,7 +414,7 @@ export default class PomodoroPlugin extends Plugin {
             const sessionType = this.getModeText();
             const nextSessionType = this.getNextModeText();
             
-            const notification = new Notification(`Pomodian - ${sessionType} Complete`, {
+            const notification = new Notification(`Pomodian - ${sessionType} complete`, {
                 body: `Your ${sessionType.toLowerCase()} session is finished. Next: ${nextSessionType}`,
                 icon: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjQiIGhlaWdodD0iMjQiIHZpZXdCb3g9IjAgMCAyNCAyNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGNpcmNsZSBjeD0iMTIiIGN5PSIxMiIgcj0iMTAiIHN0cm9rZT0iIzY2NiIgc3Ryb2tlLXdpZHRoPSIyIiBmaWxsPSJ0cmFuc3BhcmVudCIvPgo8L3N2Zz4K',
                 requireInteraction: false,
@@ -444,8 +474,8 @@ export default class PomodoroPlugin extends Plugin {
         return this.nextMode === TimerState.Work 
             ? 'Focus' 
             : this.nextMode === TimerState.ShortBreak 
-                ? 'Short Break' 
-                : 'Long Break';
+                ? 'Short break' 
+                : 'Long break';
     }
 
     private onTimerCompletion(state: TimerState) {
@@ -465,12 +495,12 @@ class PomodoroSettingTab extends PluginSettingTab {
     display(): void {
         const { containerEl } = this;
         containerEl.empty();
-        containerEl.createEl('h2', { text: 'Pomodoro Timer Settings' });
+        containerEl.createEl('h2', { text: 'Pomodoro timer settings' });
         
         // Time Settings
         new Setting(containerEl)
-            .setName('Work time (minutes)')
-            .setDesc('Duration of focus sessions')
+            .setName('Work time')
+            .setDesc('Duration of focus sessions (minutes)')
             .addSlider(slider => slider
                 .setLimits(1, 60, 2)
                 .setValue(this.plugin.settings.workTime)
@@ -481,8 +511,8 @@ class PomodoroSettingTab extends PluginSettingTab {
                 }));
         
         new Setting(containerEl)
-            .setName('Short break time (minutes)')
-            .setDesc('Duration of short breaks')
+            .setName('Short break time')
+            .setDesc('Duration of short breaks (minutes)')
             .addSlider(slider => slider
                 .setLimits(1, 30, 1)
                 .setValue(this.plugin.settings.shortBreakTime)
@@ -493,8 +523,8 @@ class PomodoroSettingTab extends PluginSettingTab {
                 }));
         
         new Setting(containerEl)
-            .setName('Long break time (minutes)')
-            .setDesc('Duration of long breaks')
+            .setName('Long break time')
+            .setDesc('Duration of long breaks (minutes)')
             .addSlider(slider => slider
                 .setLimits(1, 60, 1)
                 .setValue(this.plugin.settings.longBreakTime)
@@ -516,7 +546,7 @@ class PomodoroSettingTab extends PluginSettingTab {
                     await this.plugin.saveSettings(); 
                 }));
 
-        containerEl.createEl('h3', { text: 'Auto-start Settings' });
+        containerEl.createEl('h3', { text: 'Auto-start settings' });
         
         new Setting(containerEl)
             .setName('Auto-start breaks')
@@ -538,7 +568,7 @@ class PomodoroSettingTab extends PluginSettingTab {
                     await this.plugin.saveSettings();
                 }));
 
-        containerEl.createEl('h3', { text: 'Notification Settings' });
+        containerEl.createEl('h3', { text: 'Notification settings' });
 
         new Setting(containerEl)
             .setName('Play sound')

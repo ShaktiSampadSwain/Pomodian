@@ -133,7 +133,6 @@ export interface PomodoroSettings {
     showDesktopNotification: boolean;
     playSound: boolean;
     showInStatusBar: boolean;
-    enableKeyboardShortcuts: boolean;
 }
 
 export const DEFAULT_SETTINGS: PomodoroSettings = {
@@ -145,6 +144,5 @@ export const DEFAULT_SETTINGS: PomodoroSettings = {
     autoStartPomodoros: false,
     showDesktopNotification: true,
     playSound: true,
-    showInStatusBar: false,
-    enableKeyboardShortcuts: true
+    showInStatusBar: false
 };
