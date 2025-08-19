@@ -1,10 +1,11 @@
-import { App, Plugin, PluginSettingTab, Setting, Notice } from 'obsidian';
-import { PomoTimer, TimerState, PomodoroSettings, DEFAULT_SETTINGS } from './PomoTimer';
+import { App, Plugin, PluginSettingTab, Setting, Notice, WorkspaceLeaf, moment } from 'obsidian';
+import { PomoTimer, TimerState, PomodoroSettings, DEFAULT_SETTINGS, Session } from './PomoTimer';
+import { PomoView, POMO_VIEW_TYPE } from './PomoView';
 
 export default class PomodoroPlugin extends Plugin {
     settings: PomodoroSettings;
-    private timer: PomoTimer;
-    private currentMode: TimerState = TimerState.Work;
+    public timer: PomoTimer;
+    public currentMode: TimerState = TimerState.Work;
     private completedPomodoros: number = 0;
     private nextMode: TimerState = TimerState.ShortBreak;
     private isSessionComplete: boolean = false;
@@ -17,6 +18,7 @@ export default class PomodoroPlugin extends Plugin {
     private panelModeEl: HTMLDivElement | null = null;
     private isPanelPinned = false;
     private hideTimeout: number | null = null;
+    private pomoView: PomoView | null = null;
 
     async onload() {
         await this.loadSettings();
@@ -57,10 +59,40 @@ export default class PomodoroPlugin extends Plugin {
         this.registerEvent(this.app.workspace.on('active-leaf-change', () => this.refreshHeaderButton()));
         this.app.workspace.onLayoutReady(() => this.refreshHeaderButton());
 
+        this.registerView(
+            POMO_VIEW_TYPE,
+            (leaf) => new PomoView(leaf, this)
+        );
+
+        this.addRibbonIcon("clock", "Open Pomodoro Timer", () => {
+            this.activateView();
+        });
+
+        this.addCommand({
+            id: 'open-pomodoro-timer',
+            name: 'Open pomodoro timer',
+            callback: () => {
+                this.activateView();
+            }
+        });
+
         // Request notification permission on startup
         if ('Notification' in window && Notification.permission === 'default') {
             Notification.requestPermission();
         }
+    }
+
+    async activateView() {
+        this.app.workspace.detachLeavesOfType(POMO_VIEW_TYPE);
+
+        await this.app.workspace.getRightLeaf(false).setViewState({
+            type: POMO_VIEW_TYPE,
+            active: true,
+        });
+
+        this.app.workspace.revealLeaf(
+            this.app.workspace.getLeavesOfType(POMO_VIEW_TYPE)[0]
+        );
     }
 
     onunload() {
@@ -217,10 +249,19 @@ export default class PomodoroPlugin extends Plugin {
         }
     };
 
-    private updateUI(remainingTime: number, totalTime: number) {
-        if (!this.pieCircleEl || !this.panelTimeEl || !this.panelModeEl) return;
+    public onPomoViewOpen(view: PomoView) {
+        this.pomoView = view;
+        this.updateUI(this.timer.getRemainingTime(), this.timer.getTotalTime());
+    }
 
+    public onPomoViewClose() {
+        this.pomoView = null;
+    }
+
+    private updateUI(remainingTime: number, totalTime: number) {
         const timerState = this.timer.getState();
+
+        if (this.pieCircleEl && this.panelTimeEl && this.panelModeEl) {
         
         // Remove all mode classes first
         this.pieCircleEl.removeClass('work-mode', 'break-mode');
@@ -280,8 +321,13 @@ export default class PomodoroPlugin extends Plugin {
             this.panelModeEl.addClass('mode-disabled');
         }
     }
+
+        if (this.pomoView) {
+            this.pomoView.updateTimer(remainingTime, totalTime, timerState);
+        }
+    }
     
-    private getIdleTimeText = (): string => {
+    public getIdleTimeText = (): string => {
         const time = this.currentMode === TimerState.Work 
             ? this.settings.workTime 
             : this.currentMode === TimerState.ShortBreak 
@@ -290,7 +336,7 @@ export default class PomodoroPlugin extends Plugin {
         return `${time}:00`;
     };
 
-    private getModeText = (): string => {
+    public getModeText = (): string => {
         return this.currentMode === TimerState.Work 
             ? 'Focus' 
             : this.currentMode === TimerState.ShortBreak 
@@ -298,7 +344,7 @@ export default class PomodoroPlugin extends Plugin {
                 : 'Long break';
     };
 
-    private handlePauseResumeClick = () => {
+    public handlePauseResumeClick = () => {
         if (this.isSessionComplete) {
             this.acknowledgeSessionComplete();
             return;
@@ -311,13 +357,32 @@ export default class PomodoroPlugin extends Plugin {
         }
     };
 
-    private handleResetClick = () => {
+    public handleResetClick = () => {
         this.timer.reset();
         this.isSessionComplete = false;
         this.updateUI(0, 0);
     };
 
-    private handleCycleModeClick = () => {
+    public setMode = (mode: TimerState) => {
+        if (this.timer.getState() !== TimerState.Idle || this.timer.isRunning()) {
+            new Notice('Reset the timer to switch modes');
+            return;
+        }
+
+        if (this.isSessionComplete) {
+            this.acknowledgeSessionComplete();
+            return;
+        }
+
+        this.currentMode = mode;
+        new Notice(`Switched to ${this.getModeText()} mode`);
+        this.updateUI(0, 0);
+        if (this.pomoView) {
+            this.pomoView.updateModeButtons();
+        }
+    }
+
+    public handleCycleModeClick = () => {
         // Only allow mode change when timer is idle and reset
         if (this.timer.getState() !== TimerState.Idle || this.timer.isRunning()) {
             new Notice('Reset the timer to switch modes');
@@ -344,8 +409,38 @@ export default class PomodoroPlugin extends Plugin {
         this.updateUI(0, 0);
     };
 
+    public getStats(period: 'daily' | 'weekly'): { completedPomodoros: number, totalFocusTime: number } {
+        const now = moment();
+        let startOfPeriod;
+
+        if (period === 'daily') {
+            startOfPeriod = now.startOf('day');
+        } else { // weekly
+            startOfPeriod = now.startOf('week');
+        }
+
+        const sessionsInPeriod = this.settings.sessions.filter(session => {
+            return moment(session.date).isAfter(startOfPeriod);
+        });
+
+        const completedPomodoros = sessionsInPeriod.filter(s => s.type === TimerState.Work).length;
+        const totalFocusTime = sessionsInPeriod
+            .filter(s => s.type === TimerState.Work)
+            .reduce((total, s) => total + s.duration, 0);
+
+        return { completedPomodoros, totalFocusTime };
+    }
+
     private onTimerComplete() {
         this.isSessionComplete = true;
+
+        const session: Session = {
+            date: new Date().toISOString(),
+            type: this.currentMode,
+            duration: this.timer.getTotalTime()
+        };
+        this.settings.sessions.push(session);
+        this.saveSettings();
         
         // Play sound notification
         if (this.settings.playSound) {

@@ -123,6 +123,12 @@ export class PomoTimer {
     }
 }
 
+export interface Session {
+    date: string; // ISO string
+    type: TimerState;
+    duration: number; // in seconds
+}
+
 export interface PomodoroSettings {
     workTime: number;
     shortBreakTime: number;
@@ -133,6 +139,7 @@ export interface PomodoroSettings {
     showDesktopNotification: boolean;
     playSound: boolean;
     showInStatusBar: boolean;
+    sessions: Session[];
 }
 
 export const DEFAULT_SETTINGS: PomodoroSettings = {
@@ -144,5 +151,6 @@ export const DEFAULT_SETTINGS: PomodoroSettings = {
     autoStartPomodoros: false,
     showDesktopNotification: true,
     playSound: true,
-    showInStatusBar: false
+    showInStatusBar: false,
+    sessions: [],
 };
